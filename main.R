@@ -13,8 +13,15 @@ library('RColorBrewer')
 #'
 #' @examples
 read_data <- function(intensity_data, delimiter) {
-    return(NULL)
+  intensity_df <- read_delim(intensity_data, delim = delimiter)
+    return(intensity_df)
 }
+
+
+
+
+
+
 
 #' Define a function to calculate the proportion of variance explained by each PC
 #'
@@ -25,8 +32,18 @@ read_data <- function(intensity_data, delimiter) {
 #'
 #' @examples
 calculate_variance_explained <- function(pca_results) {
-    return(NULL)
+  std <- pca_results$sdev
+  variance <- std*std
+  tot_variance <- sum(variance)
+  proportion <- variance/tot_variance
+    return(proportion)
 }
+
+
+
+
+
+
 
 #' Define a function that takes in the variance values and the PCA results to
 #' make a tibble with PC names, variance explained by each PC, and the
@@ -43,8 +60,24 @@ calculate_variance_explained <- function(pca_results) {
 #' @export
 #' @examples 
 make_variance_tibble <- function(pca_ve, pca_results) {
-    return(NULL)
+  df<- data.frame(
+    principal_components = colnames(pca_results$x),
+    variance_explained = pca_ve,
+    cumulative = cumsum(pca_ve)
+  )
+  tibble <- as_tibble(df)
+    return(tibble)
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -60,22 +93,46 @@ make_variance_tibble <- function(pca_ve, pca_results) {
 #'
 #' @examples
 make_biplot <- function(metadata, pca_results) {
-    return(NULL)
+  df <- data.frame(pca_results$x)
+  extra <- read_csv(metadata)
+  p <- ggplot(df, aes(x=PC1, y=PC2)) + 
+       geom_point() +
+       geom_text(label=extra$SixSubTypesClassification)
+    return(p)
 }
 
-#' Define a function to return a list of probeids filtered by signifiance
+
+
+
+
+
+
+
+
+
+#' Define a function to return a list of probeids filtered by significance
 #'
 #' @param diff_exp_tibble (tibble): A tibble containing the differential expression results
 #' @param fdr_threshold (float): an appropriate FDR threshold, we will use a
 #'   value of .01. This is the column "padj" in the tibble.
 #'
-#' @return A list with the names of the probeids passing the fdr_threshold
+#' @return A list with the names of the probeid passing the fdr_threshold
 #' @export
 #'
 #' @examples
 list_significant_probes <- function(diff_exp_tibble, fdr_threshold) {
-    return(NULL)
+  tibble <- diff_exp_tibble %>%
+    filter(padj < fdr_threshold)
+  columns <- tibble$probeid
+    return(columns)
 }
+
+
+
+
+
+
+
 
 #' Define a function that uses the list of significant probeids to return a
 #' matrix with the intensity values for only those probeids.
@@ -91,8 +148,14 @@ list_significant_probes <- function(diff_exp_tibble, fdr_threshold) {
 #'
 #' @examples
 return_de_intensity <- function(intensity, sig_ids_list) {
-    return(NULL)
+  df <- intensity[rownames(intensity) %in% sig_ids_list, ]
+  matrix <- as.matrix(df, nrow=2)
+    return(matrix)
 }
+
+
+
+
 
 #' Define a function that takes the intensity values for significant probes and
 #' creates a color-blind friendly heatmap
@@ -109,6 +172,8 @@ return_de_intensity <- function(intensity, sig_ids_list) {
 #'
 #' @examples
 plot_heatmap <- function(de_intensity, num_colors, palette) {
-    return(NULL)
+  colors <- colorRampPalette(brewer.pal(num_colors, palette))(num_colors)
+  p <- heatmap(de_intensity, col=colors)
+    return(p)
 }
 
